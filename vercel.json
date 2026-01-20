@@ -15,7 +15,7 @@
         },
         {
             "source": "/(.*)",
-            "destination": "/video-call-next/$1"
+            "destination": "/video-call-next/out/$1"
         }
     ]
 }

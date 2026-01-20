@@ -12,7 +12,7 @@ export default function CreateCall() {
     e.preventDefault();
     const roomId = uuidv4();
     // Optionally store meeting name in query or state
-    router.push(`/room/${roomId}?name=${encodeURIComponent(meetingName)}`);
+    router.push(`/room?id=${roomId}&name=${encodeURIComponent(meetingName)}`);
   };
 
   return (

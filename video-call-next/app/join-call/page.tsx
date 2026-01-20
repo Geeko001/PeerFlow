@@ -9,12 +9,19 @@ export default function JoinCall() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Extract roomId from URL (assuming format /room/<id>)
-        const match = roomUrl.match(/\/room\/([a-f0-9-]+)/i);
-        if (match && match[1]) {
-            router.push(`/room/${match[1]}`);
+        let targetId = roomUrl;
+
+        // Extract ID if full URL is pasted
+        if (roomUrl.includes("id=")) {
+            targetId = roomUrl.split("id=")[1].split("&")[0];
+        } else if (roomUrl.includes("/room/")) {
+            targetId = roomUrl.split("/room/")[1].split("?")[0];
+        }
+
+        if (targetId) {
+            router.push(`/room?id=${targetId}`);
         } else {
-            alert("Please enter a valid meeting URL.");
+            alert("Please enter a valid meeting URL or ID.");
         }
     };
 
