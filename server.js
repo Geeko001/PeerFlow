@@ -53,7 +53,7 @@ wss.on('connection', (ws, req) => {
     });
 });
 
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
     res.send('Signaling server is running');
 });
 

@@ -5,7 +5,11 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
-        "test": "node -e \"require('assert'); console.log('no tests yet');\""
+        "test": "node -e \"require('assert'); console.log('no tests yet');\"",
+        "install-client": "cd video-call-next && npm install",
+        "build-client": "cd video-call-next && npm run build",
+        "build": "npm run install-client && npm run build-client",
+        "vercel-build": "npm run install-client && npm run build-client"
     },
     "author": "",
     "license": "MIT",

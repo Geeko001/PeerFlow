@@ -1,0 +1,21 @@
+{
+    "version": 2,
+    "rewrites": [
+        {
+            "source": "/api/signal/(.*)",
+            "destination": "/server.js"
+        },
+        {
+            "source": "/socket.io/(.*)",
+            "destination": "/server.js"
+        },
+        {
+            "source": "/health",
+            "destination": "/server.js"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/video-call-next/$1"
+        }
+    ]
+}
