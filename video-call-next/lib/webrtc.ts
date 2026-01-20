@@ -44,7 +44,15 @@ export function initWebRTC(
 ) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    socket = new WebSocket(`${protocol}//${host}/api/signal/${roomId}`);
+
+    // Use env var if available, otherwise fallback to assuming sharing same host (unlikely for Vercel/Node split but good fallback)
+    const baseUrl = process.env.NEXT_PUBLIC_SIGNALING_URL || `${protocol}//${host}`;
+
+    // If baseUrl is already a full URL (starts with ws), use it directly. 
+    // Construct the full URL. If baseUrl ends with /, remove it to avoid double slashes with pathname.
+    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+
+    socket = new WebSocket(`${normalizedBaseUrl}/api/signal/${roomId}`);
 
     peerConnection = new RTCPeerConnection(configuration);
 

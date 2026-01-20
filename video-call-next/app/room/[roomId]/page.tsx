@@ -7,7 +7,7 @@ import { Suspense, use } from "react";
 
 function RoomContent({ roomId }: { roomId: string }) {
     const searchParams = useSearchParams();
-    const meetingName = searchParams.get("name") ?? "Meeting";
+    const meetingName = searchParams?.get("name") ?? "Meeting";
 
     return (
         <div className="flex min-h-screen flex-col bg-zinc-900 text-white">
