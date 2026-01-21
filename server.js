@@ -3,11 +3,16 @@ const http = require('http');
 const { WebSocketServer } = require('ws');
 const { v4: uuidv4 } = require('uuid');
 
+const path = require('path');
+
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 const port = process.env.PORT || 4000;
+
+// Serve static files from the Next.js export output
+app.use(express.static(path.join(__dirname, 'video-call-next/out')));
 
 // Store rooms and their participants
 const rooms = new Map();
@@ -57,6 +62,13 @@ app.get('/health', (req, res) => {
     res.send('Signaling server is running');
 });
 
+// Catch-all handler to serve the Next.js app for any other route (SPA behavior)
+app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, 'video-call-next/out', 'index.html'));
+});
+
 server.listen(port, () => {
     console.log(`Signaling server running on port ${port}`);
 });
+
+module.exports = app;

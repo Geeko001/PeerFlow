@@ -14,6 +14,10 @@
             "destination": "/server.js"
         },
         {
+            "source": "/",
+            "destination": "/video-call-next/out/index.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/video-call-next/out/$1"
         }

@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { FluidButton } from "@/components/ui/FluidButton";
+import { Spotlight } from "@/components/ui/Spotlight";
+import { Video } from "lucide-react";
 
 export default function CreateCall() {
   const [meetingName, setMeetingName] = useState("");
@@ -11,31 +15,44 @@ export default function CreateCall() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const roomId = uuidv4();
-    // Optionally store meeting name in query or state
     router.push(`/room?id=${roomId}&name=${encodeURIComponent(meetingName)}`);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-900 text-white">
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 rounded-lg bg-white/10 p-8 backdrop-blur-lg"
-      >
-        <h1 className="text-2xl font-semibold text-center">Create a New Call</h1>
-        <input
-          type="text"
-          placeholder="Meeting name (optional)"
-          value={meetingName}
-          onChange={(e) => setMeetingName(e.target.value)}
-          className="rounded border border-gray-300 bg-white/20 px-3 py-2 text-white placeholder-gray-300 focus:outline-none"
-        />
-        <button
-          type="submit"
-          className="rounded bg-indigo-600 px-4 py-2 font-medium hover:bg-indigo-500"
-        >
-          Create Call
-        </button>
-      </form>
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#09090b] text-white relative overflow-hidden bg-grid-white/[0.02]">
+      <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="indigo" />
+
+      <main className="z-10 w-full max-w-md p-4 animate-in fade-in zoom-in-95 duration-500">
+        <GlassCard>
+          <div className="flex flex-col items-center gap-6 text-center">
+            <div className="p-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <Video className="w-8 h-8" />
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
+                Create New Room
+              </h1>
+              <p className="text-zinc-400 text-sm mt-2">
+                Start an instant high-quality video call
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+              <input
+                type="text"
+                placeholder="Room Name (Optional)"
+                value={meetingName}
+                onChange={(e) => setMeetingName(e.target.value)}
+                className="w-full rounded-full border border-white/10 bg-white/5 px-6 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 transition-colors text-center"
+              />
+              <FluidButton type="submit" className="w-full" variant="primary">
+                Start Meeting
+              </FluidButton>
+            </form>
+          </div>
+        </GlassCard>
+      </main>
     </div>
   );
 }
