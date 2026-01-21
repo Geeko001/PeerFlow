@@ -1,21 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { FluidButton } from "@/components/ui/FluidButton";
 import { Spotlight } from "@/components/ui/Spotlight";
-import { Video } from "lucide-react";
+import { Video, RefreshCw, Copy, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function CreateCall() {
   const [meetingName, setMeetingName] = useState("");
+  const [meetingId, setMeetingId] = useState("");
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
+
+  const generateMeetingId = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    const segment = () =>
+      Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    return `${segment()}-${segment()}-${segment()}`;
+  };
+
+  useEffect(() => {
+    setMeetingId(generateMeetingId());
+  }, []);
+
+  const handleRefreshId = () => {
+    setMeetingId(generateMeetingId());
+  };
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(meetingId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const roomId = uuidv4();
-    router.push(`/room?id=${roomId}&name=${encodeURIComponent(meetingName)}`);
+    if (!meetingId) return;
+    router.push(`/room?id=${meetingId}&name=${encodeURIComponent(meetingName || "Meeting")}`);
   };
 
   return (
@@ -34,19 +57,59 @@ export default function CreateCall() {
                 Create New Room
               </h1>
               <p className="text-zinc-400 text-sm mt-2">
-                Start an instant high-quality video call
+                Customize your meeting details
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="Room Name (Optional)"
-                value={meetingName}
-                onChange={(e) => setMeetingName(e.target.value)}
-                className="w-full rounded-full border border-white/10 bg-white/5 px-6 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 transition-colors text-center"
-              />
-              <FluidButton type="submit" className="w-full" variant="primary">
+
+              {/* Meeting Name Input */}
+              <div className="space-y-2 text-left">
+                <label className="text-xs font-medium text-zinc-400 ml-2">Meeting Name (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Weekly Standup"
+                  value={meetingName}
+                  onChange={(e) => setMeetingName(e.target.value)}
+                  className="w-full rounded-full border border-white/10 bg-white/5 px-6 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                />
+              </div>
+
+              {/* Meeting ID Input */}
+              <div className="space-y-2 text-left">
+                <label className="text-xs font-medium text-zinc-400 ml-2">Meeting ID</label>
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={meetingId}
+                    readOnly
+                    className="w-full rounded-full border border-white/10 bg-black/20 px-6 py-3 text-zinc-300 font-mono tracking-wider focus:outline-none cursor-default"
+                  />
+                  <div className="absolute right-2 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={handleCopyId}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors text-zinc-400 hover:text-white"
+                      title="Copy ID"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRefreshId}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors text-zinc-400 hover:text-white"
+                      title="Generate New ID"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[10px] text-zinc-500 ml-2">
+                  Share this ID with others to let them join.
+                </p>
+              </div>
+
+              <FluidButton type="submit" className="w-full mt-2" variant="primary">
                 Start Meeting
               </FluidButton>
             </form>
