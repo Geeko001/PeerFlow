@@ -1,14 +1,9 @@
-let localStream: MediaStream | null = null;
-let peerConnection: RTCPeerConnection | null = null;
-let socket: WebSocket | null = null;
+import Peer, { MediaConnection, DataConnection } from "peerjs";
 
-const configuration = {
-    iceServers: [
-        {
-            urls: "stun:stun.l.google.com:19302",
-        },
-    ],
-};
+let localStream: MediaStream | null = null;
+let peer: Peer | null = null;
+let currentCall: MediaConnection | null = null;
+let currentConn: DataConnection | null = null;
 
 export async function getLocalStream(): Promise<MediaStream> {
     if (localStream) return localStream;
@@ -37,66 +32,75 @@ export function toggleVideo() {
     }
 }
 
-export function initWebRTC(
+export function initPeer(
     roomId: string,
     stream: MediaStream,
-    remoteVideoElement: HTMLVideoElement | null
+    isHost: boolean,
+    onRemoteStream: (stream: MediaStream) => void,
+    onMessage: (msg: any) => void
 ) {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.host;
+    const peerConfig = {
+        debug: 2,
+        config: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' }
+            ]
+        }
+    };
 
-    // Use env var if available, otherwise fallback to assuming sharing same host (unlikely for Vercel/Node split but good fallback)
-    const baseUrl = process.env.NEXT_PUBLIC_SIGNALING_URL || `${protocol}//${host}`;
+    peer = isHost ? new Peer(roomId, peerConfig) : new Peer(peerConfig);
 
-    // If baseUrl is already a full URL (starts with ws), use it directly. 
-    // Construct the full URL. If baseUrl ends with /, remove it to avoid double slashes with pathname.
-    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    peer.on('open', (id) => {
+        console.log('My Peer ID is: ' + id);
+        if (!isHost) {
+            console.log(`Dialing host: ${roomId}...`);
+            const call = peer?.call(roomId, stream);
+            if (call) setupCallEventHandlers(call, onRemoteStream);
 
-    socket = new WebSocket(`${normalizedBaseUrl}/api/signal/${roomId}`);
-
-    peerConnection = new RTCPeerConnection(configuration);
-
-    // Add local tracks to peer connection
-    stream.getTracks().forEach((track) => {
-        peerConnection?.addTrack(track, stream);
+            const conn = peer?.connect(roomId);
+            if (conn) setupDataHandlers(conn, onMessage);
+        }
     });
 
-    // Handle incoming tracks
-    peerConnection.ontrack = (event) => {
-        if (remoteVideoElement) {
-            remoteVideoElement.srcObject = event.streams[0];
+    peer.on('call', (call) => {
+        console.log("Receiving call...");
+        call.answer(stream);
+        setupCallEventHandlers(call, onRemoteStream);
+    });
+
+    peer.on('connection', (conn) => {
+        console.log("Receiving data connection...");
+        setupDataHandlers(conn, onMessage);
+    });
+
+    peer.on('error', (err) => {
+        console.error("PeerJS Error:", err);
+        if (err.type === 'unavailable-id') {
+            alert(`Room ${roomId} is likely already taken. Choose another ID.`);
         }
-    };
+    });
+}
 
-    // Handle ICE candidates
-    peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-            socket?.send(
-                JSON.stringify({ type: "candidate", candidate: event.candidate })
-            );
-        }
-    };
+function setupCallEventHandlers(call: MediaConnection, onRemoteStream: (stream: MediaStream) => void) {
+    currentCall = call;
+    call.on('stream', onRemoteStream);
+    call.on('close', () => console.log("Call ended"));
+}
 
-    socket.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
+function setupDataHandlers(conn: DataConnection, onMessage: (msg: any) => void) {
+    currentConn = conn;
+    conn.on('data', (data) => {
+        console.log("Received data:", data);
+        onMessage(data);
+    });
+    conn.on('open', () => console.log("Data connection open"));
+}
 
-        if (data.type === "offer") {
-            await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.offer));
-            const answer = await peerConnection?.createAnswer();
-            await peerConnection?.setLocalDescription(answer!);
-            socket?.send(JSON.stringify({ type: "answer", answer }));
-        } else if (data.type === "answer") {
-            await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.answer));
-        } else if (data.type === "candidate") {
-            await peerConnection?.addIceCandidate(new RTCIceCandidate(data.candidate));
-        }
-    };
-
-    socket.onopen = async () => {
-        // The first one to join becomes the caller
-        // In a real app, you'd handle "who is the caller" more robustly
-        const offer = await peerConnection?.createOffer();
-        await peerConnection?.setLocalDescription(offer!);
-        socket?.send(JSON.stringify({ type: "offer", offer }));
-    };
+export function sendPeerData(data: any) {
+    if (currentConn && currentConn.open) {
+        currentConn.send(data);
+    } else {
+        console.warn("Cannot send data: No active connection");
+    }
 }

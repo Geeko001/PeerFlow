@@ -38,7 +38,7 @@ export default function CreateCall() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!meetingId) return;
-    router.push(`/room?id=${meetingId}&name=${encodeURIComponent(meetingName || "Meeting")}`);
+    router.push(`/room?id=${meetingId}&name=${encodeURIComponent(meetingName || "Meeting")}&host=true`);
   };
 
   return (
