@@ -15,10 +15,11 @@ export default function CreateCall() {
   const router = useRouter();
 
   const generateMeetingId = () => {
-    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    const segment = () =>
-      Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-    return `${segment()}-${segment()}-${segment()}`;
+    // Generate a 9-digit numeric meeting code for simplicity and reliability
+    const digits = "0123456789";
+    const segment = () => Array.from({ length: 3 }, () => digits[Math.floor(Math.random() * digits.length)]).join("");
+    // 3 segments of 3 digits each, concatenated to form 9 digits
+    return segment() + segment() + segment();
   };
 
   useEffect(() => {

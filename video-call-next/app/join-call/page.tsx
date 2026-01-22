@@ -11,16 +11,21 @@ export default function JoinCall() {
     const [roomUrl, setRoomUrl] = useState("");
     const router = useRouter();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        let targetId = roomUrl;
+  const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      // Accept either a 9-digit numeric code, a direct URL with id=, or a direct /room/ URL
+      let targetId = roomUrl;
 
-        // Extract ID if full URL is pasted
-        if (roomUrl.includes("id=")) {
-            targetId = roomUrl.split("id=")[1].split("&")[0];
-        } else if (roomUrl.includes("/room/")) {
-            targetId = roomUrl.split("/room/")[1].split("?")[0];
-        }
+      // If a plain 9-digit numeric code is entered, use it directly
+      if (/^\d{9}$/.test(roomUrl)) {
+          targetId = roomUrl;
+      } else if (roomUrl.includes("id=")) {
+          // Extract ID if full URL is pasted
+          targetId = roomUrl.split("id=")[1].split("&")[0];
+      } else if (roomUrl.includes("/room/")) {
+          // Extract ID from path if the user pasted a direct /room/ID URL
+          targetId = roomUrl.split("/room/")[1].split("?")[0];
+      }
 
         if (targetId) {
             router.push(`/room?id=${targetId}`);
