@@ -40,6 +40,8 @@ export default function VideoRoom({ roomId }: VideoRoomProps) {
 
     const router = useRouter();
     const { isRecording, startRecording, stopRecording } = useMediaRecorder();
+    // Skin smoothing toggle for the local user's view
+    const [skinSmooth, setSkinSmooth] = useState(false);
 
     const addReaction = useCallback((emoji: string, isRemote = false) => {
         const id = Math.random().toString(36).substr(2, 9);
@@ -54,6 +56,21 @@ export default function VideoRoom({ roomId }: VideoRoomProps) {
             setReactions(prev => prev.filter(r => r.id !== id));
         }, 2000);
     }, []);
+
+    // Video frame style: fixed aspect ratio framed video (1:1 by default)
+    const localVideoStyle: any = {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        transform: 'scaleX(-1)',
+        filter: skinSmooth ? 'blur(0.6px) brightness(1.05) saturate(1.05)' : 'none',
+    };
+    const remoteVideoStyle: any = {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        filter: skinSmooth ? 'blur(0.6px) brightness(1.05) saturate(1.05)' : 'none',
+    };
 
     const handleIncomingMessage = useCallback((data: any) => {
         if (data.type === "chat") {
@@ -176,16 +193,16 @@ export default function VideoRoom({ roomId }: VideoRoomProps) {
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 w-full h-[70vh]">
-                <div className="relative flex-1 video-container bg-black group">
-                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover transform scale-x-[-1]" />
+                <div className="relative flex-1 video-container bg-black group" style={{ aspectRatio: '1 / 1' }}>
+                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" style={localVideoStyle} />
                     <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded text-white text-xs font-mono">
                         You {isLowPower && "(Eco Mode)"}
                     </div>
                     {hasCrown && <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[170%] text-6xl pointer-events-none animate-bounce">👑</div>}
                 </div>
 
-                <div className="relative flex-1 video-container bg-black">
-                    <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                <div className="relative flex-1 video-container bg-black" style={{ aspectRatio: '1 / 1' }}>
+                    <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" style={remoteVideoStyle} />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/50 text-xl font-medium animate-pulse -z-10 text-center">
                         {peerStatus}<br />
                         <span className="text-sm opacity-50">{isHost ? "(Share ID to user)" : ""}</span>
@@ -207,6 +224,10 @@ export default function VideoRoom({ roomId }: VideoRoomProps) {
                 </button>
                 <button onClick={handleEndCall} className="control-btn bg-red-600 hover:bg-red-700 border-red-600" title="End Call">
                     <PhoneOff />
+                </button>
+                {/* Skin smoothing toggle (per-user effect) */}
+                <button onClick={() => setSkinSmooth(!skinSmooth)} className={cn("control-btn", skinSmooth && "bg-green-600")} title="Skin Smoothing">
+                    Skin
                 </button>
                 <div className="w-px h-8 bg-white/20 mx-2 hidden sm:block" />
                 <button onClick={() => setShowChat(!showChat)} className={cn("control-btn", showChat && "bg-indigo-500 border-indigo-500")} title="Chat">
