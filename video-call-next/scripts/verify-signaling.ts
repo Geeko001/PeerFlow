@@ -23,9 +23,12 @@ const options = {
   timeout: 3000,
 };
 
-const req = lib.request(options, (res) => {
-  console.log(`SIGNALLING HEALTH: ${res.statusCode} ${res.statusMessage}`);
-  process.exit(res.statusCode >= 200 && res.statusCode < 300 ? 0 : 1);
+type HttpIncomingMessage = import('http').IncomingMessage;
+const req = lib.request(options, (res: HttpIncomingMessage) => {
+  const code = res.statusCode ?? 0;
+  const message = res.statusMessage ?? '';
+  console.log(`SIGNALLING HEALTH: ${code} ${message}`);
+  process.exit(code >= 200 && code < 300 ? 0 : 1);
 });
 
 req.on('error', (err) => {
