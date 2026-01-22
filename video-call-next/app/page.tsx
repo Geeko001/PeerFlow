@@ -46,6 +46,11 @@ export default function Home() {
           </FluidButton>
         </div>
 
+        {/* Quick helper: 9-digit meeting code explanation */}
+        <div className="mt-4 text-center text-xs text-zinc-400 select-none" aria-label="meeting-code-tip">
+          Meeting codes are 9-digit numeric codes for quick joining.
+        </div>
+
         {/* Feature Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mt-24">
           <GlassCard delay={0.4}>

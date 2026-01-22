@@ -62,9 +62,11 @@ export default function JoinCall() {
                                 onChange={(e) => setRoomUrl(e.target.value)}
                                 className="w-full rounded-full border border-white/10 bg-white/5 px-6 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors text-center"
                             />
-                            <FluidButton type="submit" className="w-full">
-                                Join Now
-                            </FluidButton>
+                        <FluidButton type="submit" className="w-full">
+                            Join Now
+                        </FluidButton>
+                        {/* Helper */}
+                        <div className="text-xs text-zinc-400 text-center mt-1">Tip: Enter a 9-digit meeting code to join quickly.</div>
                         </form>
                     </div>
                 </GlassCard>

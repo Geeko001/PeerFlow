@@ -39,8 +39,26 @@ export function initPeer(
     onRemoteStream: (stream: MediaStream) => void,
     onMessage: (msg: any) => void
 ) {
+    // Resolve signaling host/port/path from environment (Render/free hosts) or fallbacks
+    const hasWindow = typeof window !== 'undefined';
+    const envHost = (typeof process !== 'undefined' && (process as any).env && (process as any).env.NEXT_PUBLIC_PEERJS_HOST) || undefined;
+    const envPort = (typeof process !== 'undefined' && (process as any).env && (process as any).env.NEXT_PUBLIC_PEERJS_PORT) || undefined;
+    const envPath = (typeof process !== 'undefined' && (process as any).env && (process as any).env.NEXT_PUBLIC_PEERJS_PATH) || undefined;
+
+    let host = envHost ?? (hasWindow ? (window as any).location.hostname : 'localhost');
+    let port = envPort ? Number(envPort) : (hasWindow && (window as any).location.protocol === 'https:' ? 443 : 9000);
+    let path = envPath ?? '/peerjs';
+    let secure = hasWindow ? (window as any).location.protocol === 'https:' : false;
+
+    // If port is not a number (undefined) fallback safely
+    if (typeof port !== 'number' || Number.isNaN(port)) port = hasWindow && (window as any).location.protocol === 'https:' ? 443 : 9000;
+
     const peerConfig = {
         debug: 2,
+        host,
+        port,
+        path,
+        secure,
         config: {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },

@@ -5,8 +5,11 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
+        "dev": "concurrently \"npm run dev --prefix video-call-next -- -p 3050\" \"set PORT=9050 && npm start --prefix signaling-server\"",
         "test": "node -e \"require('assert'); console.log('no tests yet');\"",
         "install-client": "cd video-call-next && npm install",
+        "install-server": "cd signaling-server && npm install",
+        "install-all": "npm install && npm run install-client && npm run install-server",
         "build-client": "cd video-call-next && npm run build",
         "build": "npm run install-client && npm run build-client",
         "vercel-build": "npm run install-client && npm run build-client"
@@ -18,5 +21,8 @@
         "simple-peer": "^9.11.1",
         "socket.io": "^4.8.3",
         "uuid": "^3.4.0"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
     }
 }
